@@ -1,35 +1,36 @@
-const express = require("express")
+// // what should happen if they try to delete when there are no kidneys?
+// // Get - user can check how many kidney they have and their healthy.
+// // post - user can add a new kidney.
+// // put - user can replace a kidney, make it healthy. 
+// // delete - user can remove a kidney.
+
+const express = require("express");
 const app = express();
 
-const user = [{
-    name: "john",
-    kidney: [{ healthy: true},
-        {healthy: false}]
+const user=[{
+    name: "akash",
+    kidney: [{
+        healthy: true
+    },{
+        healthy: false
+    }]
 }]
 
-app.use(express.json())
-
-// Get - user can check how many kidney they have and their healthy.
-// post - user can add a new kidney.
-// put - user can replace a kidney, make it healthy. 
-// delete - user can remove a kidney.
+app.use(express.json());
 
 app.get("/", (req, res)=>{
-    const kidneystatus = user[0].kidney;
-    const kidneylength = kidneystatus.length;
-    let noofhealthykidney = 0 
-    for (let i = 0; i < kidneylength; i++) {
-        if (kidneystatus[i].healthy === true){
-            noofhealthykidney = noofhealthykidney + 1
-        }
-    }
-    const noofunhealthy = kidneylength - noofhealthykidney
+    const akashhealthy = user[0].kidney;
+    const noofkidney = akashhealthy.length;
+
+    // we use filter instead of for loop. and this is cleaner
+    const healthykidney = akashhealthy.filter(kidney => kidney.healthy)
+    let noofhealthykidney = healthykidney.length
+    const noofunhealthykidney = noofkidney - noofhealthykidney
     res.json({
-        kidneylength,
+        noofkidney,
         noofhealthykidney,
-        noofunhealthy,
-        kidneystatus
-    });
+        noofunhealthykidney
+    })
 })
 
 app.post("/", (req, res)=>{
@@ -38,58 +39,39 @@ app.post("/", (req, res)=>{
         healthy: ishealthy
     })
     res.json({
-        msg: "done!"
+        msg: "done!" 
     })
 })
 
 app.put("/", (req, res)=>{
-    if (isanyunhealthykidney){
-        for (let i = 0; i < user[0].kidney.length; i++){
-            user[0].kidney[i].healthy = true;
-        }
-        res.json({
-            msg : "all kidney updated to true"
-        })
-    }
-    else{
-        res.status(411).json({
-            msg: "you have all healthy kidney. so you do'nt update!"
-        })
-    }
+    user[0].kidney=user[0].kidney.map(healthy => {return{healthy:true}})
+    console.log(user[0].kidney)
+    res.json({
+        msg: "done"
+    })
 })
 
 app.delete("/", (req, res)=>{
-    if (isanyunhealthykidney){
-        const newkidney = []
-        for (let i = 0; i < user[0].kidney.length; i++){
-            if (user[0].kidney[i].healthy === true){
-                newkidney.push({
-                    healthy: true
-                })
-            }
-        }
-        user[0].kidney = newkidney
+    if (  atleastoneunhealthykidney()){
+        user[0].kidney =user[0].kidney.filter(kidney => kidney.healthy)
         res.json({
-            msg : "sucessfully deleted unhealthy kidney"
+            msg: "done"
         })
-    }
-    else{
+    }else{
         res.status(411).json({
-            msg: "you have no bad kidneys"
-        })
+            msg:"you have no bad item"
+        });
     }
 })
 
-// what should happen if they try to delete when there are no kidneys?
-
-function isanyunhealthykidney(){
-    const atleastoneunhealthykidney = false
-    for (let i = 0; i < user[0].kidney.length; i++){
+function atleastoneunhealthykidney(){
+    let atleastONEunhealthykidney=false
+    for (let i=0; i<user[0].kidney.length; i++){
         if (!user[0].kidney[i].healthy){
-            atleastoneunhealthykidney = true
+            atleastONEunhealthykidney=true;
         }
     }
-    return atleastoneunhealthykidney
+    return atleastONEunhealthykidney
 }
 
-app.listen(3001);
+app.listen(3000);
