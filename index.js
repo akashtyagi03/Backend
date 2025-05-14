@@ -1,77 +1,45 @@
-// // what should happen if they try to delete when there are no kidneys?
-// // Get - user can check how many kidney they have and their healthy.
-// // post - user can add a new kidney.
-// // put - user can replace a kidney, make it healthy. 
-// // delete - user can remove a kidney.
+const express = require("express")
+const app = express()
 
-const express = require("express");
-const app = express();
 
-const user=[{
-    name: "akash",
-    kidney: [{
-        healthy: true
-    },{
-        healthy: false
-    }]
-}]
-
-app.use(express.json());
-
-app.get("/", (req, res)=>{
-    const akashhealthy = user[0].kidney;
-    const noofkidney = akashhealthy.length;
-
-    // we use filter instead of for loop. and this is cleaner
-    const healthykidney = akashhealthy.filter(kidney => kidney.healthy)
-    let noofhealthykidney = healthykidney.length
-    const noofunhealthykidney = noofkidney - noofhealthykidney
-    res.json({
-        noofkidney,
-        noofhealthykidney,
-        noofunhealthykidney
-    })
-})
-
-app.post("/", (req, res)=>{
-    const ishealthy = req.body.ishealthy;
-    user[0].kidney.push({
-        healthy: ishealthy
-    })
-    res.json({
-        msg: "done!" 
-    })
-})
-
-app.put("/", (req, res)=>{
-    user[0].kidney=user[0].kidney.map(healthy => {return{healthy:true}})
-    console.log(user[0].kidney)
-    res.json({
-        msg: "done"
-    })
-})
-
-app.delete("/", (req, res)=>{
-    if (  atleastoneunhealthykidney()){
-        user[0].kidney =user[0].kidney.filter(kidney => kidney.healthy)
-        res.json({
-            msg: "done"
-        })
-    }else{
+function usermiddleware(req, res, next){
+    const username = req.headers.username;
+    const password = req.headers.password;
+    if (username != "akash" || password!="pass"){
         res.status(411).json({
-            msg:"you have no bad item"
-        });
+            msg:"you given us wrong input"
+        })
+        return;
+    }else{
+        next();
     }
+}
+function kidneymiddleware(req, res, next){
+    const kidneyid = req.query.kidneyid;
+    const kidneylength = kidneyid.length;
+
+    res.send("you have " + kidneylength + " kidney");
+    // if (kidneyid!=1 && kidneyid!=2){
+    //     res.status(400).json({
+    //         msg: "you give wrong id"
+    //     })
+    //     return;
+    // }else{
+    //     next();
+    // }
+}
+app.use(usermiddleware)
+
+
+app.get("/health-checkup", kidneymiddleware, (req, res)=>{
+    
+    res.json({ message: "your kidney is fine!" })
 })
 
-function atleastoneunhealthykidney(){
-    let atleastONEunhealthykidney=false
-    for (let i=0; i<user[0].kidney.length; i++){
-        if (!user[0].kidney[i].healthy){
-            atleastONEunhealthykidney=true;
-        }
-    }
-    return atleastONEunhealthykidney
-}
+app.use(function(err, req, res, next){
+    res.json({
+        msg: "here some issue with our server"
+    })
+})
 
-app.listen(3000);
+app.listen(3000)
